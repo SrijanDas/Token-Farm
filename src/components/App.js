@@ -5,14 +5,15 @@ import Web3 from "web3";
 import DaiToken from "../abis/DaiToken.json";
 import DappToken from "../abis/DappToken.json";
 import TokenFarm from "../abis/TokenFarm.json";
+import Main from "./Main";
 
 function App() {
   const [account, setAccount] = useState("0x0");
-  const [daikToken, setDaikToken] = useState({});
+  const [daiToken, setDaiToken] = useState({});
   const [dappToken, setDappToken] = useState({});
   const [tokenFarm, setTokenFarm] = useState({});
   const [dappTokenBalance, setDappTokenBalance] = useState("0");
-  const [daikTokenBalance, setDaikTokenBalance] = useState("0");
+  const [daiTokenBalance, setDaiTokenBalance] = useState("0");
   const [stakingBalance, setStakingBalance] = useState("0");
   const [loading, setLoading] = useState(true);
 
@@ -48,12 +49,12 @@ function App() {
         DaiToken.abi,
         daiTokenData.address
       );
-      setDaikToken(daiToken);
+      setDaiToken(daiToken);
 
       let daiTokenBalance = await daiToken.methods
         .balanceOf(accounts[0])
         .call();
-      setDaikTokenBalance(daiTokenBalance.toString());
+      setDaiTokenBalance(daiTokenBalance.toString());
     } else {
       window.alert("DaiToken contract not deployed to detected network.");
     }
@@ -95,6 +96,31 @@ function App() {
     setLoading(false);
   }
 
+  const stakeTokens = (amount) => {
+    setLoading(true);
+    daiToken.methods
+      .approve(tokenFarm._address, amount)
+      .send({ from: account })
+      .on("transactionHash", (hash) => {
+        tokenFarm.methods
+          .stakeTokens(amount)
+          .send({ from: account })
+          .on("transactionHash", (hash) => {
+            setLoading(false);
+          });
+      });
+  };
+
+  const unstakeTokens = (amount) => {
+    setLoading(true);
+    tokenFarm.methods
+      .unstakeTokens()
+      .send({ from: account })
+      .on("transactionHash", (hash) => {
+        setLoading(false);
+      });
+  };
+
   return (
     <div>
       <Navbar account={account} />
@@ -111,7 +137,13 @@ function App() {
                   <span class="sr-only">Loading...</span>
                 </div>
               ) : (
-                <h1>Hello, World!</h1>
+                <Main
+                  daiTokenBalance={daiTokenBalance}
+                  dappTokenBalance={dappTokenBalance}
+                  stakingBalance={stakingBalance}
+                  stakeTokens={stakeTokens}
+                  unstakeTokens={unstakeTokens}
+                />
               )}
             </div>
           </main>
