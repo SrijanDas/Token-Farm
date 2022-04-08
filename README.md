@@ -8,7 +8,7 @@ Token Farm is a defi app where you can deposit mock Dai tokens and earn rewards.
 
 **Frontend:** React, Bootstrap
 
-**Backend:** Solidity
+**Backend:** Solidity, web3.js
 
 ## Run Locally
 
